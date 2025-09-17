@@ -63,22 +63,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // --------------------------
     // 2. Edit Task
     // --------------------------
-    if ($action === 'edit') {
-        $task_id = intval($_POST['task_id']);
-        $title = trim($_POST['title']);
-        $status = $_POST['status'];
+if ($action === 'edit') {
+    $task_id = intval($_POST['task_id'] ?? 0);
+    $title = trim($_POST['title'] ?? '');
 
-        if ($task_id === 0 || $title === '') {
-            echo json_encode(['status' => 'error', 'message' => 'Data tidak lengkap']);
-            exit;
-        }
-
-        $stmt = $pdo->prepare("UPDATE tasks SET title = ?, status = ? WHERE id = ?");
-        $stmt->execute([$title, $status, $task_id]);
-
-        echo json_encode(['status' => 'success', 'message' => 'Task berhasil diubah!']);
+    if ($task_id === 0 || $title === '') {
+        echo json_encode(['status' => 'error', 'message' => 'Data tidak lengkap']);
         exit;
     }
+
+    // Pastikan task milik user yang sedang login
+    $check = $pdo->prepare("SELECT id FROM tasks WHERE id = ? AND user_id = ?");
+    $check->execute([$task_id, $user_id]);
+    if ($check->rowCount() === 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Task tidak ditemukan atau bukan milik Anda']);
+        exit;
+    }
+
+    // Update hanya title
+    $stmt = $pdo->prepare("UPDATE tasks SET title = ? WHERE id = ?");
+    $stmt->execute([$title, $task_id]);
+
+    echo json_encode(['status' => 'success', 'message' => 'Task berhasil diubah!']);
+    exit;
+}
+
 
     // --------------------------
     // 3. Pindah Status Task

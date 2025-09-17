@@ -24,3 +24,8 @@ body {
 .task-item {
   cursor: grab;
 }
+
+.task-column.drag-over {
+  background-color: #e8f7ff;
+  border-color: #00aaff;
+}

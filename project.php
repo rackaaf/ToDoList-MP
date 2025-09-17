@@ -93,14 +93,6 @@ if (!$project) {
             <label for="editTaskTitle" class="form-label">Judul Task</label>
             <input type="text" class="form-control" id="editTaskTitle" name="title" required>
           </div>
-          <div class="mb-3">
-            <label for="editTaskStatus" class="form-label">Status</label>
-            <select class="form-control" id="editTaskStatus" name="status" required>
-              <option value="mulai">Mulai</option>
-              <option value="proses">Proses</option>
-              <option value="selesai">Selesai</option>
-            </select>
-          </div>
           <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
         </form>
       </div>
