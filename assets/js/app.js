@@ -33,29 +33,38 @@ document.addEventListener("DOMContentLoaded", () => {
     fetch("api/task.php?project_id=" + projectId)
       .then((res) => res.json())
       .then((data) => {
-        // Pastikan kolom dikosongkan terlebih dahulu
+        console.log("Task Data:", data); // ✅ Debug lihat isi respons
+
+        // Kosongkan kolom sebelum render ulang
         document.getElementById("mulaiColumn").innerHTML = "";
         document.getElementById("prosesColumn").innerHTML = "";
         document.getElementById("selesaiColumn").innerHTML = "";
 
-        // Loop semua task dari response API
+        // Jika data kosong, jangan error
+        if (!Array.isArray(data)) {
+          console.error("Invalid data format:", data);
+          return;
+        }
+
+        // Render tiap task sesuai status
         data.forEach((task) => {
           const item = document.createElement("div");
+          item.classList.add("task-item");
+          item.setAttribute("draggable", "true");
+          item.dataset.id = task.id;
 
-          // ====== RENDER TASK DENGAN TOMBOL EDIT ======
           item.innerHTML = `
-                    <div class="card mb-2">
-                        <div class="card-body">
-                            <h5 class="card-title">${task.title}</h5>
-                            <button class="btn btn-sm btn-warning"
-                                onclick="openEditTaskModal(${task.id}, '${task.title}', '${task.status}')">
-                                Edit
-                            </button>
-                        </div>
-                    </div>
-                `;
+          <div class="card mb-2">
+            <div class="card-body">
+              <h5 class="card-title">${task.title}</h5>
+              <button class="btn btn-sm btn-warning"
+                onclick="openEditTaskModal(${task.id}, '${task.title}', '${task.status}')">
+                Edit
+              </button>
+            </div>
+          </div>
+        `;
 
-          // Masukkan ke kolom sesuai status
           if (task.status === "mulai") {
             document.getElementById("mulaiColumn").appendChild(item);
           } else if (task.status === "proses") {
@@ -72,27 +81,54 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Tambah task
   const addTaskForm = document.getElementById("addTaskForm");
+
   if (addTaskForm) {
     addTaskForm.addEventListener("submit", function (e) {
-      e.preventDefault();
+      e.preventDefault(); // ✅ cegah submit default
+
       const formData = new FormData(this);
 
       fetch("api/task.php", {
         method: "POST",
         body: formData,
       })
-        .then((res) => res.json())
+        .then((res) => res.text()) // ambil raw text dulu
         .then((data) => {
-          if (data.status === "success") {
-            alert("Task berhasil ditambahkan!");
-            loadTasks();
-            this.reset();
-            bootstrap.Modal.getInstance(
-              document.getElementById("addTaskModal")
-            ).hide();
-          } else {
-            alert(data.message || "Gagal menambahkan task.");
+          console.log("Raw Response:", data); // ✅ debug
+
+          let jsonData;
+          try {
+            jsonData = JSON.parse(data); // coba parse JSON
+          } catch (error) {
+            console.error("JSON Parse Error:", error);
+            alert("Gagal memproses respon server. Cek console untuk detail.");
+            return;
           }
+
+          // ✅ cek hasil respon
+          if (jsonData.status === "success") {
+            alert("Task berhasil ditambahkan!");
+
+            // reload daftar task
+            if (typeof loadTasks === "function") {
+              loadTasks();
+            }
+
+            // reset form
+            addTaskForm.reset();
+
+            // tutup modal
+            const modal = bootstrap.Modal.getInstance(
+              document.getElementById("addTaskModal")
+            );
+            if (modal) modal.hide();
+          } else {
+            alert(jsonData.message || "Gagal menambahkan task.");
+          }
+        })
+        .catch((err) => {
+          console.error("Fetch Error:", err);
+          alert("Terjadi kesalahan saat mengirim data.");
         });
     });
   }

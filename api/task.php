@@ -1,9 +1,12 @@
 <?php
-require_once '../includes/db.php';
-require_once '../includes/functions.php';
 session_start();
+require_once "../includes/db.php";
+require_once "../includes/functions.php";
 
-// Cek login
+header('Content-Type: application/json');
+ob_clean(); 
+
+// Pastikan user sudah login
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
     exit;
@@ -11,131 +14,100 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
+// ============================
+// HANDLE GET LIST TASK
+// ============================
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    $project_id = $_GET['project_id'] ?? null;
+
+    if (!$project_id) {
+        echo json_encode(['status' => 'error', 'message' => 'Project ID diperlukan']);
+        exit;
+    }
+
+    // Ambil task berdasarkan project_id
+    $stmt = $pdo->prepare("SELECT id, title, status FROM tasks WHERE project_id = ?");
+    $stmt->execute([$project_id]);
+    $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    echo json_encode($tasks);
+    exit;
+}
+
+// ============================
+// HANDLE POST (ADD, EDIT, MOVE, DELETE)
+// ============================
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
-    /**
-     * ================================
-     * 1. Tambah Task
-     * ================================
-     */
+    // --------------------------
+    // 1. Tambah Task
+    // --------------------------
     if ($action === 'add') {
-        $project_id = intval($_POST['project_id']);
-        $title = trim($_POST['title']);
+        $project_id = $_POST['project_id'] ?? null;
+        $title      = trim($_POST['title'] ?? '');
+        $status     = $_POST['status'] ?? 'mulai';
 
-        if ($project_id === 0 || $title === '') {
+        if (empty($project_id) || empty($title)) {
             echo json_encode(['status' => 'error', 'message' => 'Data tidak lengkap']);
             exit;
         }
 
-        $stmt = $pdo->prepare("INSERT INTO tasks (project_id, title, status) VALUES (?, ?, 'mulai')");
-        $stmt->execute([$project_id, $title]);
+        $stmt = $pdo->prepare("INSERT INTO tasks (title, status, project_id, user_id) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$title, $status, $project_id, $user_id]);
 
-        $task_id = $pdo->lastInsertId();
-
-        // Catat riwayat aktivitas
-        addActivity($pdo, $user_id, $project_id, $task_id, 'Menambahkan Task', "Task '{$title}' ditambahkan ke kolom Mulai");
-
-        echo json_encode(['status' => 'success', 'message' => 'Task berhasil ditambahkan!']);
+        echo json_encode(['status' => 'success', 'message' => 'Task berhasil ditambahkan']);
         exit;
     }
 
-    /**
-     * ================================
-     * 2. Edit Task
-     * ================================
-     */
+    // --------------------------
+    // 2. Edit Task
+    // --------------------------
     if ($action === 'edit') {
         $task_id = intval($_POST['task_id']);
         $title = trim($_POST['title']);
+        $status = $_POST['status'];
 
         if ($task_id === 0 || $title === '') {
             echo json_encode(['status' => 'error', 'message' => 'Data tidak lengkap']);
             exit;
         }
 
-        // Ambil data lama
-        $oldTaskStmt = $pdo->prepare("SELECT title, project_id FROM tasks WHERE id = ?");
-        $oldTaskStmt->execute([$task_id]);
-        $oldTask = $oldTaskStmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$oldTask) {
-            echo json_encode(['status' => 'error', 'message' => 'Task tidak ditemukan']);
-            exit;
-        }
-
-        // Update task
-        $stmt = $pdo->prepare("UPDATE tasks SET title = ? WHERE id = ?");
-        $stmt->execute([$title, $task_id]);
-
-        // Catat riwayat aktivitas
-        $details = "Mengubah judul task dari '{$oldTask['title']}' menjadi '{$title}'";
-        addActivity($pdo, $user_id, $oldTask['project_id'], $task_id, 'Mengedit Task', $details);
+        $stmt = $pdo->prepare("UPDATE tasks SET title = ?, status = ? WHERE id = ?");
+        $stmt->execute([$title, $status, $task_id]);
 
         echo json_encode(['status' => 'success', 'message' => 'Task berhasil diubah!']);
         exit;
     }
 
-    /**
-     * ================================
-     * 3. Pindah Status Task (Drag & Drop)
-     * ================================
-     */
+    // --------------------------
+    // 3. Pindah Status Task
+    // --------------------------
     if ($action === 'move') {
         $task_id = intval($_POST['task_id']);
         $new_status = $_POST['status'];
 
-        // Validasi status
         $allowedStatus = ['mulai', 'proses', 'selesai'];
         if (!in_array($new_status, $allowedStatus)) {
             echo json_encode(['status' => 'error', 'message' => 'Status tidak valid']);
             exit;
         }
 
-        // Ambil data lama untuk log
-        $oldTaskStmt = $pdo->prepare("SELECT title, status, project_id FROM tasks WHERE id = ?");
-        $oldTaskStmt->execute([$task_id]);
-        $oldTask = $oldTaskStmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$oldTask) {
-            echo json_encode(['status' => 'error', 'message' => 'Task tidak ditemukan']);
-            exit;
-        }
-
         $stmt = $pdo->prepare("UPDATE tasks SET status = ? WHERE id = ?");
         $stmt->execute([$new_status, $task_id]);
-
-        // Catat riwayat aktivitas
-        $details = "Task '{$oldTask['title']}' dipindah dari {$oldTask['status']} ke {$new_status}";
-        addActivity($pdo, $user_id, $oldTask['project_id'], $task_id, 'Memindahkan Task', $details);
 
         echo json_encode(['status' => 'success', 'message' => 'Status task berhasil diubah']);
         exit;
     }
 
-    /**
-     * ================================
-     * 4. Hapus Task
-     * ================================
-     */
+    // --------------------------
+    // 4. Hapus Task
+    // --------------------------
     if ($action === 'delete') {
         $task_id = intval($_POST['task_id']);
 
-        // Ambil data lama untuk log
-        $oldTaskStmt = $pdo->prepare("SELECT title, project_id FROM tasks WHERE id = ?");
-        $oldTaskStmt->execute([$task_id]);
-        $oldTask = $oldTaskStmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$oldTask) {
-            echo json_encode(['status' => 'error', 'message' => 'Task tidak ditemukan']);
-            exit;
-        }
-
         $stmt = $pdo->prepare("DELETE FROM tasks WHERE id = ?");
         $stmt->execute([$task_id]);
-
-        // Catat riwayat aktivitas
-        addActivity($pdo, $user_id, $oldTask['project_id'], $task_id, 'Menghapus Task', "Task '{$oldTask['title']}' dihapus");
 
         echo json_encode(['status' => 'success', 'message' => 'Task berhasil dihapus']);
         exit;
@@ -144,24 +116,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo json_encode(['status' => 'error', 'message' => 'Aksi tidak dikenali']);
     exit;
 }
-
-if ($_POST['action'] === 'move') {
-    $task_id = intval($_POST['task_id']);
-    $status = $_POST['status'];
-
-    $query = "UPDATE tasks SET status = ?, updated_at = NOW() WHERE id = ?";
-    $stmt = $pdo->prepare($query);
-    if ($stmt->execute([$status, $task_id])) {
-        echo json_encode([
-            'status' => 'success',
-            'message' => 'Task berhasil dipindahkan!'
-        ]);
-    } else {
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Gagal memindahkan task.'
-        ]);
-    }
-    exit;
-}
-
+?>

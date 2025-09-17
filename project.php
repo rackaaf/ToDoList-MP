@@ -60,11 +60,16 @@ if (!$project) {
       </div>
       <div class="modal-body">
         <form id="addTaskForm">
-          <input type="hidden" name="project_id" value="<?= $project_id; ?>">
+          <input type="hidden" name="action" value="add">
+          <input type="hidden" name="user_id" value="<?php echo $_SESSION['user_id']; ?>">
+          <input type="hidden" name="project_id" value="<?php echo $_GET['id']; ?>">
+          <input type="hidden" name="status" value="mulai">
+
           <div class="mb-3">
             <label for="taskTitle" class="form-label">Judul Task</label>
             <input type="text" class="form-control" id="taskTitle" name="title" required>
           </div>
+
           <button type="submit" class="btn btn-primary">Simpan</button>
         </form>
       </div>
@@ -72,10 +77,49 @@ if (!$project) {
   </div>
 </div>
 
+
+<!-- Modal Edit Task -->
+<div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editTaskModalLabel">Edit Task</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editTaskForm">
+          <input type="hidden" name="task_id" id="editTaskId">
+          <div class="mb-3">
+            <label for="editTaskTitle" class="form-label">Judul Task</label>
+            <input type="text" class="form-control" id="editTaskTitle" name="title" required>
+          </div>
+          <div class="mb-3">
+            <label for="editTaskStatus" class="form-label">Status</label>
+            <select class="form-control" id="editTaskStatus" name="status" required>
+              <option value="mulai">Mulai</option>
+              <option value="proses">Proses</option>
+              <option value="selesai">Selesai</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<hr class="my-4">
+<h4>Riwayat Aktivitas</h4>
+<ul class="list-group" id="activityLogs">
+    <li class="list-group-item text-muted">Memuat...</li>
+</ul>
+
+
 <script>
-const projectId = <?= $project_id; ?>;
+  const projectId = <?php echo $_GET['id']; ?>;
 </script>
-<script src="assets/js/app.js"></script>
+
 
 
 <?php include "includes/footer.php"; ?>
