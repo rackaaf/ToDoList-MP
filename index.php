@@ -3,7 +3,7 @@ include "includes/auth.php";
 include "includes/db.php";
 include "includes/header.php";
 
-// Ambil hanya proyek milik user yang login
+
 $stmt = $pdo->prepare("SELECT * FROM projects WHERE user_id = :uid ORDER BY created_at DESC");
 $stmt->execute(['uid' => $_SESSION['user_id']]);
 $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -25,6 +25,13 @@ $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             Dibuat pada: <?= date('d M Y', strtotime($project['created_at'])); ?>
                         </p>
                         <a href="project.php?id=<?= $project['id']; ?>" class="btn btn-sm btn-success">Lihat Proyek</a>
+                        <a href="javascript:void(0)" 
+   class="btn btn-sm btn-danger"
+   onclick="deleteProject(<?= $project['id']; ?>)">
+   Hapus
+</a>
+</button>
+
                     </div>
                 </div>
             </div>

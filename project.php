@@ -3,7 +3,7 @@ include "includes/auth.php";
 include "includes/db.php";
 include "includes/header.php";
 
-// Validasi project ID
+
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     echo "<p class='text-danger'>Proyek tidak ditemukan.</p>";
     include "includes/footer.php";
@@ -12,7 +12,7 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $project_id = (int)$_GET['id'];
 
-// Cek apakah project ini milik user yang login
+
 $stmt = $pdo->prepare("SELECT * FROM projects WHERE id = :id AND user_id = :uid");
 $stmt->execute(['id' => $project_id, 'uid' => $_SESSION['user_id']]);
 $project = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -29,12 +29,12 @@ if (!$project) {
     <a href="index.php" class="btn btn-secondary">← Kembali</a>
 </div>
 
-<!-- Tombol tambah task -->
+
 <div class="mb-4">
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">+ Tambah Task</button>
 </div>
 
-<!-- Tiga Kolom Status -->
+
 <div class="row">
     <div class="col-md-4">
         <h4 class="text-center">Mulai</h4>
@@ -50,7 +50,7 @@ if (!$project) {
     </div>
 </div>
 
-<!-- Modal Tambah Task -->
+
 <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -78,7 +78,7 @@ if (!$project) {
 </div>
 
 
-<!-- Modal Edit Task -->
+
 <div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -99,13 +99,6 @@ if (!$project) {
     </div>
   </div>
 </div>
-
-
-<hr class="my-4">
-<h4>Riwayat Aktivitas</h4>
-<ul class="list-group" id="activityLogs">
-    <li class="list-group-item text-muted">Memuat...</li>
-</ul>
 
 
 <script>

@@ -6,7 +6,7 @@ require_once "../includes/functions.php";
 header('Content-Type: application/json');
 ob_clean(); 
 
-// Pastikan user sudah login
+
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
     exit;
@@ -14,9 +14,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-// ============================
-// HANDLE GET LIST TASK
-// ============================
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $project_id = $_GET['project_id'] ?? null;
 
@@ -25,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         exit;
     }
 
-    // Ambil task berdasarkan project_id
+
     $stmt = $pdo->prepare("SELECT id, title, status FROM tasks WHERE project_id = ?");
     $stmt->execute([$project_id]);
     $tasks = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -34,15 +32,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     exit;
 }
 
-// ============================
-// HANDLE POST (ADD, EDIT, MOVE, DELETE)
-// ============================
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
-    // --------------------------
-    // 1. Tambah Task
-    // --------------------------
+
     if ($action === 'add') {
         $project_id = $_POST['project_id'] ?? null;
         $title      = trim($_POST['title'] ?? '');
@@ -60,9 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // --------------------------
-    // 2. Edit Task
-    // --------------------------
+
 if ($action === 'edit') {
     $task_id = intval($_POST['task_id'] ?? 0);
     $title = trim($_POST['title'] ?? '');
@@ -72,7 +64,7 @@ if ($action === 'edit') {
         exit;
     }
 
-    // Pastikan task milik user yang sedang login
+
     $check = $pdo->prepare("SELECT id FROM tasks WHERE id = ? AND user_id = ?");
     $check->execute([$task_id, $user_id]);
     if ($check->rowCount() === 0) {
@@ -80,7 +72,6 @@ if ($action === 'edit') {
         exit;
     }
 
-    // Update hanya title
     $stmt = $pdo->prepare("UPDATE tasks SET title = ? WHERE id = ?");
     $stmt->execute([$title, $task_id]);
 
@@ -89,9 +80,6 @@ if ($action === 'edit') {
 }
 
 
-    // --------------------------
-    // 3. Pindah Status Task
-    // --------------------------
     if ($action === 'move') {
         $task_id = intval($_POST['task_id']);
         $new_status = $_POST['status'];
@@ -109,20 +97,32 @@ if ($action === 'edit') {
         exit;
     }
 
-    // --------------------------
-    // 4. Hapus Task
-    // --------------------------
-    if ($action === 'delete') {
-        $task_id = intval($_POST['task_id']);
 
-        $stmt = $pdo->prepare("DELETE FROM tasks WHERE id = ?");
-        $stmt->execute([$task_id]);
+}
 
-        echo json_encode(['status' => 'success', 'message' => 'Task berhasil dihapus']);
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+    parse_str(file_get_contents("php://input"), $_DELETE);
+    $task_id = intval($_DELETE['id'] ?? 0);
+
+    if ($task_id === 0) {
+        echo json_encode(['status' => 'error', 'message' => 'ID task tidak valid']);
         exit;
     }
 
-    echo json_encode(['status' => 'error', 'message' => 'Aksi tidak dikenali']);
+
+    $check = $pdo->prepare("SELECT id FROM tasks WHERE id = ? AND user_id = ?");
+    $check->execute([$task_id, $user_id]);
+    if ($check->rowCount() === 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Task tidak ditemukan atau bukan milik Anda']);
+        exit;
+    }
+
+    $stmt = $pdo->prepare("DELETE FROM tasks WHERE id = ? AND user_id = ?");
+    $stmt->execute([$task_id, $user_id]);
+
+    echo json_encode(['success' => true, 'message' => 'Task berhasil dihapus']);
     exit;
 }
 ?>

@@ -1,8 +1,8 @@
 <?php
 $host = "localhost";
-$user = "root";       // sesuaikan dengan user MySQL Anda
-$pass = "";           // sesuaikan dengan password MySQL Anda
-$dbname = "todolistapp"; // nama database
+$user = "root";      
+$pass = "";          
+$dbname = "todolistapp";
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);

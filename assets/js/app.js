@@ -1,4 +1,3 @@
-// assets/js/app.js
 document.addEventListener("DOMContentLoaded", () => {
   const addProjectForm = document.getElementById("addProjectForm");
 
@@ -15,10 +14,17 @@ document.addEventListener("DOMContentLoaded", () => {
         .then((res) => res.json())
         .then((data) => {
           if (data.status === "success") {
-            alert("Proyek berhasil ditambahkan!");
-            location.reload(); // refresh halaman
+            Swal.fire({
+              title: "Berhasil!",
+              text: "Proyek berhasil ditambahkan!",
+              icon: "success",
+              timer: 2000,
+              showConfirmButton: false,
+            }).then(() => {
+              location.reload();
+            });
           } else {
-            alert(data.message || "Terjadi kesalahan.");
+            Swal.fire("Gagal!", data.message || "Terjadi kesalahan.", "error");
           }
         })
         .catch((err) => console.error(err));
@@ -26,7 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// ================= LOAD TASKS =================
 function loadTasks() {
   fetch("api/task.php?project_id=" + projectId)
     .then((res) => res.json())
@@ -49,16 +54,22 @@ function loadTasks() {
         item.dataset.id = task.id;
 
         item.innerHTML = `
-          <div class="card mb-2">
-            <div class="card-body">
-              <h5 class="card-title">${task.title}</h5>
-              <button class="btn btn-sm btn-warning"
-                onclick="openEditTaskModal(${task.id}, '${task.title}')">
-                Edit
-              </button>
-            </div>
-          </div>
-        `;
+  <div class="card mb-2">
+    <div class="card-body">
+      <h5 class="card-title">${task.title}</h5>
+      <a href="javascript:void(0)" 
+         class="btn btn-sm btn-warning"
+         onclick="openEditTaskModal(${task.id}, '${task.title}')">
+         Edit
+      </a>
+      <a href="javascript:void(0)" 
+         class="btn btn-sm btn-danger"
+         onclick="deleteTask(${task.id})">
+         Hapus
+      </a>
+    </div>
+  </div>
+`;
 
         if (task.status === "mulai") {
           document.getElementById("mulaiColumn").appendChild(item);
@@ -72,17 +83,106 @@ function loadTasks() {
     .catch((error) => console.error("Error loading tasks:", error));
 }
 
+function deleteProject(projectId) {
+  Swal.fire({
+    title: "Yakin hapus project ini?",
+    text: "Semua task di dalam project ini juga akan terhapus!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Ya, hapus!",
+    cancelButtonText: "Batal",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch("api/project.php", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "id=" + projectId,
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            Swal.fire({
+              title: "Terhapus!",
+              text: data.message,
+              icon: "success",
+              timer: 2000,
+              showConfirmButton: false,
+            }).then(() => {
+              window.location.href = "index.php";
+            });
+          } else {
+            Swal.fire("Gagal!", data.message, "error");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          Swal.fire("Error!", "Terjadi kesalahan di server", "error");
+        });
+    }
+  });
+}
+
+function deleteTask(taskId) {
+  Swal.fire({
+    title: "Yakin hapus task ini?",
+    text: "Task yang dihapus tidak bisa dikembalikan.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Ya, hapus!",
+    cancelButtonText: "Batal",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch("api/task.php", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "id=" + taskId,
+      })
+        .then((response) => response.text())
+        .then((text) => {
+          if (!text) {
+            throw new Error("Server tidak mengirim respons JSON");
+          }
+          return JSON.parse(text);
+        })
+        .then((data) => {
+          if (data.success) {
+            Swal.fire({
+              title: "Terhapus!",
+              text: data.message,
+              icon: "success",
+              timer: 2000,
+              showConfirmButton: false,
+            }).then(() => {
+              loadTasks(projectId);
+            });
+          } else {
+            Swal.fire("Gagal!", data.message, "error");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          Swal.fire("Error!", error.message, "error");
+        });
+    }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const taskColumns = document.querySelectorAll(".task-column");
 
-  loadTasks();
+  if (typeof projectId !== "undefined") {
+    loadTasks();
+  }
 
-  // Tambah task
   const addTaskForm = document.getElementById("addTaskForm");
 
   if (addTaskForm) {
     addTaskForm.addEventListener("submit", function (e) {
-      e.preventDefault(); // ✅ cegah submit default
+      e.preventDefault();
 
       const formData = new FormData(this);
 
@@ -90,38 +190,40 @@ document.addEventListener("DOMContentLoaded", () => {
         method: "POST",
         body: formData,
       })
-        .then((res) => res.text()) // ambil raw text dulu
+        .then((res) => res.text())
         .then((data) => {
-          console.log("Raw Response:", data); // ✅ debug
+          console.log("Raw Response:", data);
 
           let jsonData;
           try {
-            jsonData = JSON.parse(data); // coba parse JSON
+            jsonData = JSON.parse(data);
           } catch (error) {
             console.error("JSON Parse Error:", error);
             alert("Gagal memproses respon server. Cek console untuk detail.");
             return;
           }
 
-          // ✅ cek hasil respon
           if (jsonData.status === "success") {
-            alert("Task berhasil ditambahkan!");
-
-            // reload daftar task
-            if (typeof loadTasks === "function") {
+            Swal.fire({
+              title: "Berhasil!",
+              text: "Task berhasil ditambahkan!",
+              icon: "success",
+              timer: 2000,
+              showConfirmButton: false,
+            }).then(() => {
               loadTasks();
-            }
-
-            // reset form
-            addTaskForm.reset();
-
-            // tutup modal
-            const modal = bootstrap.Modal.getInstance(
-              document.getElementById("addTaskModal")
-            );
-            if (modal) modal.hide();
+              addTaskForm.reset();
+              const modal = bootstrap.Modal.getInstance(
+                document.getElementById("addTaskModal")
+              );
+              if (modal) modal.hide();
+            });
           } else {
-            alert(jsonData.message || "Gagal menambahkan task.");
+            Swal.fire(
+              "Gagal!",
+              jsonData.message || "Gagal menambahkan task.",
+              "error"
+            );
           }
         })
         .catch((err) => {
@@ -131,7 +233,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Drag and Drop
   taskColumns.forEach((column) => {
     column.addEventListener("dragover", (e) => {
       e.preventDefault();
@@ -150,14 +251,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const newStatus = this.dataset.status;
 
       fetch("api/task.php", {
-        method: "POST", // pakai POST, bukan PUT
+        method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: `action=move&task_id=${taskId}&status=${newStatus}`,
       })
         .then((res) => res.json())
         .then((data) => {
           if (data.status === "success") {
-            loadTasks(); // refresh tampilan
+            loadTasks();
           } else {
             alert(data.message || "Gagal update status.");
           }
@@ -166,14 +267,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Drag start
   document.addEventListener("dragstart", function (e) {
     if (e.target.classList.contains("task-item")) {
       e.dataTransfer.setData("text", e.target.dataset.id);
     }
   });
 
-  // Hapus task
   document.addEventListener("click", function (e) {
     if (e.target.classList.contains("btn-delete")) {
       const taskId = e.target.dataset.id;
@@ -196,7 +295,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Pindah task antar kolom
 function moveTask(taskId, newStatus) {
   fetch("api/task.php", {
     method: "POST",
@@ -210,7 +308,6 @@ function moveTask(taskId, newStatus) {
     .then((data) => {
       if (data.status === "success") {
         console.log(data.message);
-        // Refresh tampilan board setelah dipindahkan
         loadTasks();
       } else {
         alert("Gagal memindahkan task: " + data.message);
@@ -222,7 +319,6 @@ function moveTask(taskId, newStatus) {
     });
 }
 
-// ================== EDIT TASK ==================
 document
   .getElementById("editTaskForm")
   .addEventListener("submit", function (e) {
@@ -245,15 +341,8 @@ document
             confirmButtonText: "OK",
           });
 
-          // Refresh daftar task setelah edit
           loadTasks();
 
-          // Jika punya log aktivitas, reload juga
-          if (typeof loadActivityLogs === "function") {
-            loadActivityLogs(projectId);
-          }
-
-          // Tutup modal edit
           const editModal = bootstrap.Modal.getInstance(
             document.getElementById("editTaskModal")
           );
@@ -278,39 +367,6 @@ document
       });
   });
 
-// ================== LOAD ACTIVITY LOG ==================
-function loadActivityLogs(projectId) {
-  fetch("api/activity.php?project_id=" + projectId)
-    .then((res) => res.json())
-    .then((data) => {
-      const logList = document.getElementById("activityLogs");
-      logList.innerHTML = "";
-
-      if (data.status === "success") {
-        if (data.data.length === 0) {
-          logList.innerHTML =
-            '<li class="list-group-item text-muted">Belum ada aktivitas.</li>';
-        } else {
-          data.data.forEach((log) => {
-            const item = document.createElement("li");
-            item.className = "list-group-item";
-            item.innerHTML = `<strong>${log.username}</strong> - ${log.activity}<br><small class="text-muted">${log.created_at}</small>`;
-            logList.appendChild(item);
-          });
-        }
-      } else {
-        logList.innerHTML =
-          '<li class="list-group-item text-danger">Gagal memuat aktivitas.</li>';
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-      document.getElementById("activityLogs").innerHTML =
-        '<li class="list-group-item text-danger">Error loading logs.</li>';
-    });
-}
-
-// ================== LOAD TASK DETAIL INTO EDIT MODAL ==================
 function openEditTaskModal(taskId, title) {
   document.getElementById("editTaskId").value = taskId;
   document.getElementById("editTaskTitle").value = title;
