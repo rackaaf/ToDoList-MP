@@ -3,7 +3,6 @@ include "includes/auth.php";
 include "includes/db.php";
 include "includes/header.php";
 
-
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     echo "<p class='text-danger'>Proyek tidak ditemukan.</p>";
     include "includes/footer.php";
@@ -11,7 +10,6 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 }
 
 $project_id = (int)$_GET['id'];
-
 
 $stmt = $pdo->prepare("SELECT * FROM projects WHERE id = :id AND user_id = :uid");
 $stmt->execute(['id' => $project_id, 'uid' => $_SESSION['user_id']]);
@@ -25,32 +23,32 @@ if (!$project) {
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Proyek: <?= htmlspecialchars($project['name']); ?></h2>
-    <a href="index.php" class="btn btn-secondary">← Kembali</a>
+    <h2><i class="bi bi-kanban"></i> Proyek: <?= htmlspecialchars($project['name']); ?></h2>
+    <a href="index.php" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Kembali</a>
 </div>
 
-
-<div class="mb-4">
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">+ Tambah Task</button>
+<div class="mb-4 text-end">
+    <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+        <i class="bi bi-plus-square"></i> Tambah Task
+    </button>
 </div>
 
-
-<div class="row">
+<div class="row g-3">
     <div class="col-md-4">
-        <h4 class="text-center">Mulai</h4>
-        <div class="task-column bg-light p-3 rounded" data-status="mulai" id="mulaiColumn"></div>
+        <h4 class="text-center text-primary"><i class="bi bi-hourglass-split"></i> Mulai</h4>
+        <div class="task-column rounded p-3" data-status="mulai" id="mulaiColumn"></div>
     </div>
     <div class="col-md-4">
-        <h4 class="text-center">Proses</h4>
-        <div class="task-column bg-light p-3 rounded" data-status="proses" id="prosesColumn"></div>
+        <h4 class="text-center text-warning"><i class="bi bi-gear-wide-connected"></i> Proses</h4>
+        <div class="task-column rounded p-3" data-status="proses" id="prosesColumn"></div>
     </div>
     <div class="col-md-4">
-        <h4 class="text-center">Selesai</h4>
-        <div class="task-column bg-light p-3 rounded" data-status="selesai" id="selesaiColumn"></div>
+        <h4 class="text-center text-success"><i class="bi bi-check2-circle"></i> Selesai</h4>
+        <div class="task-column rounded p-3" data-status="selesai" id="selesaiColumn"></div>
     </div>
 </div>
 
-
+<!-- Modal Tambah Task -->
 <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -70,15 +68,14 @@ if (!$project) {
             <input type="text" class="form-control" id="taskTitle" name="title" required>
           </div>
 
-          <button type="submit" class="btn btn-primary">Simpan</button>
+          <button type="submit" class="btn btn-primary w-100">Simpan</button>
         </form>
       </div>
     </div>
   </div>
 </div>
 
-
-
+<!-- Modal Edit Task -->
 <div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -93,18 +90,15 @@ if (!$project) {
             <label for="editTaskTitle" class="form-label">Judul Task</label>
             <input type="text" class="form-control" id="editTaskTitle" name="title" required>
           </div>
-          <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+          <button type="submit" class="btn btn-primary w-100">Simpan Perubahan</button>
         </form>
       </div>
     </div>
   </div>
 </div>
 
-
 <script>
   const projectId = <?php echo $_GET['id']; ?>;
 </script>
-
-
 
 <?php include "includes/footer.php"; ?>

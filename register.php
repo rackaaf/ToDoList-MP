@@ -28,26 +28,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <?php include "includes/header.php"; ?>
-<div class="row justify-content-center">
-    <div class="col-md-4">
-        <h3 class="mb-3">Registrasi</h3>
-        <?php if (!empty($message)): ?>
-            <div class="alert alert-info"><?= htmlspecialchars($message); ?></div>
-        <?php endif; ?>
-        <form method="POST">
-            <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input type="text" name="username" class="form-control" required>
+<div class="row justify-content-center box">
+    <div class="col-md-5">
+        <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body p-4">
+                <h3 class="mb-4 text-center"><i class="bi bi-person-plus"></i> Registrasi</h3>
+
+                <?php if (!empty($message)): ?>
+                    <div class="alert alert-info"><?= htmlspecialchars($message); ?></div>
+                <?php endif; ?>
+
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-person"></i> Username</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-shield-lock"></i> Password</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <button class="btn btn-primary w-100"><i class="bi bi-check-circle"></i> Daftar</button>
+                </form>
+
+                <p class="mt-3 text-center">
+                    Sudah punya akun? <a href="login.php">Login</a>
+                </p>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required>
-            </div>
-            <button class="btn btn-primary w-100">Daftar</button>
-        </form>
-        <p class="mt-3 text-center">
-            Sudah punya akun? <a href="login.php">Login</a>
-        </p>
+        </div>
     </div>
 </div>
 <?php include "includes/footer.php"; ?>

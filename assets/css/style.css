@@ -1,30 +1,185 @@
 body {
-  background-color: #f8f9fa;
+  background: #1a1a1a;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #fff;
 }
 
-.card-title {
-  font-weight: bold;
-}
-
-.modal-body label {
+.btn {
+  border-radius: 10px;
   font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary {
+  background: #ff4da6;
+  border: none;
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #e60073;
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #444;
+  border: none;
+  color: #fff;
+}
+.btn-secondary:hover {
+  background: #666;
+  color: #fff;
+}
+
+.btn-success {
+  background: #ff80bf;
+  border: none;
+  color: #1a1a1a;
+}
+.btn-success:hover {
+  background: #ff4da6;
+  color: #fff;
+}
+
+.btn-danger {
+  background: #cc0066;
+  border: none;
+  color: #fff;
+}
+.btn-danger:hover {
+  background: #99004d;
+  color: #fff;
+}
+
+.btn-outline-light {
+  border: 1px solid #fff;
+  color: #fff;
+}
+.btn-outline-light:hover {
+  background: #ff4da6;
+  color: #fff;
+  border-color: #ff4da6;
+}
+
+a {
+  color: #ff4da6;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+  color: #ff80bf;
+  text-decoration: underline;
+}
+
+.navbar {
+  background: #1a1a1a;
+}
+.navbar .navbar-brand {
+  font-weight: bold;
+  font-size: 1.3rem;
+  color: #fff;
+  margin-left: 30px;
+}
+.navbar .btn-outline-light {
+  border-color: #fff;
+  color: #fff;
+}
+.navbar .btn-outline-light:hover {
+  background: #fff;
+  color: #ff4da6;
+}
+
+.project-card {
+  border: none;
+  border-radius: 12px;
+  background: #2b2b2b;
+  transition: all 0.2s ease-in-out;
+  color: #fff;
+}
+.project-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.5);
+}
+.project-card .card-title {
+  font-weight: bold;
+  color: #ff4da6;
 }
 
 .task-column {
-  min-height: 300px;
-  border: 2px dashed #ccc;
-  transition: background-color 0.3s;
+  min-height: 350px;
+  background: linear-gradient(145deg, #222, #2e2e2e); /* gradient abu gelap */
+  border: 1px solid #333;
+  border-radius: 15px;
+  padding: 15px;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.5);
+}
+.task-column:hover {
+  border-color: #ff4da6;
+  box-shadow: 0 0 15px rgba(255, 77, 166, 0.4);
 }
 
-.task-column:hover {
-  background-color: #f0f0f0;
+.task-column-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+  color: #ff4da6;
+  letter-spacing: 1px;
 }
 
 .task-item {
-  cursor: grab;
+  background: #1c1c1c;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  border: 1px solid #333;
+  transition: all 0.2s ease;
+}
+.task-item:hover {
+  transform: scale(1.03);
+  background: #262626;
+  border-color: #ff4da6;
+}
+.task-item .task-title {
+  font-weight: 600;
+  color: #ffb6d9; /* pink muda biar kontras */
+}
+.task-item .task-actions .btn {
+  border-radius: 8px;
+  font-size: 0.8rem;
+}
+.task-item .btn-danger {
+  background: #ff4da6;
+  border: none;
+}
+.task-item .btn-danger:hover {
+  background: #e60073;
 }
 
-.task-column.drag-over {
-  background-color: #e8f7ff;
-  border-color: #00aaff;
+.modal-content {
+  border-radius: 15px;
+  background: #2b2b2b;
+  color: #fff;
+  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.card {
+  border-radius: 15px;
+  background: #2b2b2b;
+  color: #fff;
+}
+.card h3 {
+  font-weight: bold;
+  color: #ff4da6;
+}
+form .form-label {
+  font-weight: 500;
+  color: #ddd;
+}
+
+.box {
+  margin-top: 150px;
 }

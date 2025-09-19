@@ -28,26 +28,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <?php include "includes/header.php"; ?>
-<div class="row justify-content-center">
-    <div class="col-md-4">
-        <h3 class="mb-3">Login</h3>
-        <?php if (!empty($message)): ?>
-            <div class="alert alert-danger"><?= htmlspecialchars($message); ?></div>
-        <?php endif; ?>
-        <form method="POST">
-            <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input type="text" name="username" class="form-control" required>
+<div class="row justify-content-center box">
+    <div class="col-md-5">
+        <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body p-4">
+                <h3 class="mb-4 text-center"><i class="bi bi-box-arrow-in-right"></i> Login</h3>
+
+                <?php if (!empty($message)): ?>
+                    <div class="alert alert-danger"><?= htmlspecialchars($message); ?></div>
+                <?php endif; ?>
+
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-person-circle"></i> Username</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-lock-fill"></i> Password</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <button class="btn btn-primary w-100"><i class="bi bi-box-arrow-in-right"></i> Login</button>
+                </form>
+
+                <p class="mt-3 text-center">
+                    Belum punya akun? <a href="register.php">Daftar</a>
+                </p>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required>
-            </div>
-            <button class="btn btn-primary w-100">Login</button>
-        </form>
-        <p class="mt-3 text-center">
-            Belum punya akun? <a href="register.php">Daftar</a>
-        </p>
+        </div>
     </div>
 </div>
 <?php include "includes/footer.php"; ?>

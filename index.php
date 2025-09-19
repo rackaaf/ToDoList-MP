@@ -3,35 +3,38 @@ include "includes/auth.php";
 include "includes/db.php";
 include "includes/header.php";
 
-
 $stmt = $pdo->prepare("SELECT * FROM projects WHERE user_id = :uid ORDER BY created_at DESC");
 $stmt->execute(['uid' => $_SESSION['user_id']]);
 $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Dashboard</h2>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProjectModal">+ Tambah Proyek</button>
+    <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+    <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#addProjectModal">
+        <i class="bi bi-plus-circle"></i> Tambah Proyek
+    </button>
 </div>
 
 <div class="row">
     <?php if (count($projects) > 0): ?>
         <?php foreach ($projects as $project): ?>
             <div class="col-md-4">
-                <div class="card shadow-sm mb-3">
+                <div class="card project-card shadow-sm mb-3">
                     <div class="card-body">
-                        <h5 class="card-title"><?= htmlspecialchars($project['name']); ?></h5>
-                        <p class="card-text">
-                            Dibuat pada: <?= date('d M Y', strtotime($project['created_at'])); ?>
+                        <h5 class="card-title">
+                          <i class="bi bi-folder2-open"></i> <?= htmlspecialchars($project['name']); ?>
+                        </h5>
+                        <p class="card-text text-muted">
+                          <i class="bi bi-calendar-event"></i> <?= date('d M Y', strtotime($project['created_at'])); ?>
                         </p>
-                        <a href="project.php?id=<?= $project['id']; ?>" class="btn btn-sm btn-success">Lihat Proyek</a>
+                        <a href="project.php?id=<?= $project['id']; ?>" class="btn btn-sm btn-success">
+                            <i class="bi bi-eye"></i> Lihat
+                        </a>
                         <a href="javascript:void(0)" 
-   class="btn btn-sm btn-danger"
-   onclick="deleteProject(<?= $project['id']; ?>)">
-   Hapus
-</a>
-</button>
-
+                           class="btn btn-sm btn-danger"
+                           onclick="deleteProject(<?= $project['id']; ?>)">
+                           <i class="bi bi-trash"></i> Hapus
+                        </a>
                     </div>
                 </div>
             </div>
@@ -55,7 +58,7 @@ $projects = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <label for="projectName" class="form-label">Nama Proyek</label>
             <input type="text" class="form-control" id="projectName" name="name" required>
           </div>
-          <button type="submit" class="btn btn-primary">Simpan</button>
+          <button type="submit" class="btn btn-primary w-100">Simpan</button>
         </form>
       </div>
     </div>
